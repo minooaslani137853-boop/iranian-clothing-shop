@@ -1,0 +1,31 @@
+# معماری هدف
+
+مرحله ۱ فقط اسکلت و قرارداد طراحی است؛ کارخانه، endpoint، schema و fixture هنوز ساخته نشده‌اند.
+
+## لایه‌ها
+مرورگر فارسی RTL → Flask routes → services → repositories → SQLite.
+
+- `app/__init__.py`: محل کارخانه آینده `create_app` و تنظیمات توسعه/تست.
+- `routes/`: ورودی HTTP، پاسخ HTML، CSRF و اعتبارسنجی اولیه؛ بدون SQL مستقیم.
+- `services/`: قواعد جستجو، سبد و checkout و اعتبارسنجی نهایی.
+- `repositories/`: SQL پارامتری و مرز تراکنش؛ اتصال مستقل هر درخواست با cleanup و foreign keys فعال.
+- `templates/` و `static/`: قالب پایه فارسی RTL و منابع محلی.
+
+## مسیرهای پیشنهادی
+`GET /products`، `GET /products/<id>`، `GET /cart`، `POST /cart/items`، `POST /cart/items/<id>/update`، `POST /cart/items/<id>/delete`، `GET /checkout`، `POST /checkout`.
+
+## سبد و checkout
+سبد در SQLite و فقط شناسه تصادفی آن در cookie نشست امضاشده نگهداری شود؛ اطلاعات شخصی در cookie نباشد. دسترسی به سبد و تأیید سفارش به نشست مالک محدود شود.
+
+Checkout در یک تراکنش `BEGIN IMMEDIATE` موجودی و قیمت را دوباره بررسی کند؛ تغییر قیمت به تأیید مجدد منجر شود. سفارش، snapshot اقلام، کاهش موجودی و پاک‌کردن سبد اتمیک باشند. هر خطا rollback شود. کلید checkout یکتا ثبت دوباره را متوقف کند. برای قفل طولانی timeout محدود و پیام فارسی در نظر گرفته شود.
+
+## پیکربندی و امنیت
+داده توسعه در `instance/shop.sqlite3` و داده تست در فایل موقت مستقل. کلید تولید از `SECRET_KEY` محیط؛ debug فقط توسعه. CSRF در POSTها، escape قالب‌ها و عدم ثبت کلید یا اطلاعات مشتری در log الزامی است. حفاظت CSRF در مرحله پیاده‌سازی انتخاب و اضافه خواهد شد.
+
+## آزمون
+- `unit/`: منطق خالص بدون HTTP.
+- `integration/`: Flask test client با SQLite موقت واقعی.
+- `system/`: Selenium و سرور تست مستقل.
+- `acceptance/`: سناریوهای US-01 تا US-03 از دید مشتری.
+
+fixtureها اتصال، سرور، مرورگر و داده را پاک‌سازی کنند؛ خروجی HTML و تصویر خطا در `docs/test-reports/` باشد. فعلاً هیچ آزمونی وجود ندارد. SQLite مناسب توسعه و فروشگاه کوچک است؛ نوشتن هم‌زمان زیاد در آینده نیازمند ارزیابی PostgreSQL خواهد بود.
