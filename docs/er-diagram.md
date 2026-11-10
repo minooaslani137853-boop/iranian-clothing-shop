@@ -6,6 +6,7 @@
 erDiagram
     USER {
         integer id PK
+        boolean is_admin
         text email UK
         text password_hash
         text created_at
@@ -73,3 +74,5 @@ erDiagram
 مرحله ۳: جدول `user` با ایمیل یکتا و هش رمز و ستون‌های دسته، سایز و رنگ محصول با مقدار پیش‌فرض خالی اضافه شدند. دستور `upgrade-db` داده مرحله ۲ را حفظ می‌کند.
 
 مرحله ۴: user_id اختیاری مالک حساب، payment_provider و payment_reference اضافه شدند. وضعیت پرداخت Mock جدید `mock_paid` است؛ سفارش‌های تاریخی `placed` حفظ می‌شوند. اطلاعات کارت در مدل وجود ندارد. سفارش بدون user_id فقط با نشست سبد قابل مشاهده است. مبلغ کل و وجود اقلام در جریان checkout اتمیک کنترل می‌شوند.
+
+مرحله ۵: `user.is_admin` با پیش‌فرض false و قید Boolean اضافه شد. `upgrade-db` کاربران قدیمی را بدون اعطای نقش حفظ می‌کند. وضعیت‌های fulfillment شامل processing، shipped و delivered هستند؛ snapshot مبلغ و اقلام تغییر نمی‌کند.

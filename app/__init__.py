@@ -2,7 +2,7 @@
 from pathlib import Path
 
 import click
-from flask import Flask
+from flask import Flask, render_template
 from sqlalchemy import event, inspect, text
 
 from app.config import Config
@@ -42,6 +42,29 @@ def create_app(config=None):
     app.register_blueprint(shop)
     from app.routes.orders import orders
     app.register_blueprint(orders)
+    from app.routes.admin import admin
+    app.register_blueprint(admin)
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()
+        return render_template('error.html', code=500, message='خطای داخلی رخ داده است. لطفاً کمی بعد دوباره تلاش کنید.'), 500
+
+    @app.errorhandler(403)
+    def forbidden(error):
+        return render_template('error.html', code=403, message='اجازه دسترسی به این بخش را ندارید.'), 403
+
+    @app.cli.command('set-admin')
+    @click.option('--email', required=True, help='Email of an existing registered user.')
+    @click.option('--revoke', is_flag=True, help='Remove administrator access.')
+    def set_admin(email, revoke):
+        from app.models import User
+        user = db.session.scalar(db.select(User).where(User.email == email.strip().casefold()))
+        if user is None:
+            raise click.ClickException('User not found; register the account first.')
+        user.is_admin = not revoke
+        db.session.commit()
+        click.echo('Administrator access updated.')
     from app.services.payments import MockGateway
     app.extensions['payment_gateway'] = app.config.get('PAYMENT_GATEWAY') or MockGateway()
 
@@ -62,6 +85,10 @@ def create_app(config=None):
             for column, definition in additions.items():
                 if column not in order_columns:
                     connection.execute(text(f'ALTER TABLE customer_order ADD COLUMN {column} {definition}'))
+        user_columns = {column['name'] for column in inspect(db.engine).get_columns('user')}
+        if 'is_admin' not in user_columns:
+            with db.engine.begin() as connection:
+                connection.execute(text('ALTER TABLE user ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0 CHECK (is_admin IN (0, 1))'))
         click.echo('Database upgraded.')
 
     return app
