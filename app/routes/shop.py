@@ -55,7 +55,10 @@ def register():
                 db.session.rollback()
                 error = 'این ایمیل قبلاً ثبت شده است.'
             else:
+                cart_id = session.get('cart_id')
                 session.clear()
+                if cart_id:
+                    session['cart_id'] = cart_id
                 session['user_id'] = user.id
                 return redirect(url_for('shop.products'))
     return render_template('auth.html', registering=True, error=error), 400 if error else 200
@@ -70,7 +73,10 @@ def login():
         user = db.session.scalar(db.select(User).where(User.email == email))
         valid = check_password_hash(user.password_hash if user else DUMMY_HASH, password) if len(password) <= 128 else False
         if user and valid:
+            cart_id = session.get('cart_id')
             session.clear()
+            if cart_id:
+                session['cart_id'] = cart_id
             session['user_id'] = user.id
             return redirect(url_for('shop.products'))
         error = 'ایمیل یا رمز عبور نادرست است.'
