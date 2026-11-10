@@ -4,6 +4,12 @@
 
 ```mermaid
 erDiagram
+    USER {
+        integer id PK
+        text email UK
+        text password_hash
+        text created_at
+    }
     PRODUCT ||--o{ CART_ITEM : contains
     CART ||--o{ CART_ITEM : has
     CART ||--o{ CUSTOMER_ORDER : submits
@@ -16,6 +22,9 @@ erDiagram
         text image_path
         integer price_toman
         integer stock
+        text category
+        text size
+        text color
         boolean is_active
     }
     CART {
@@ -55,4 +64,6 @@ erDiagram
 - حذف سبد اقلام آن را cascade کند؛ سبد دارای سفارش حذف نشود. محصول دارای سابقه حذف نشود و به جای آن غیرفعال شود.
 - نام و قیمت اقلام سفارش پس از تغییر محصول ثابت بمانند.
 - `checkout_key` و `tracking_code` یکتا و غیرقابل حدس؛ زمان ISO 8601 در UTC.
-- اطلاعات گیرنده در سفارش است؛ حساب مشتری نداریم. وضعیت اولیه `placed` فقط ثبت سفارش است، نه پرداخت بانکی.
+- اطلاعات گیرنده در سفارش است؛ حساب کاربر در مرحله ۳ اضافه شده است ولی هنوز به سبد و سفارش متصل نیست. وضعیت اولیه `placed` فقط ثبت سفارش است، نه پرداخت بانکی.
+
+مرحله ۳: جدول `user` با ایمیل یکتا و هش رمز و ستون‌های دسته، سایز و رنگ محصول با مقدار پیش‌فرض خالی اضافه شدند. دستور `upgrade-db` داده مرحله ۲ را حفظ می‌کند.

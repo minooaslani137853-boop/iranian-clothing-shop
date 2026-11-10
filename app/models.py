@@ -22,6 +22,9 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=False, default='')
     image_path = db.Column(db.Text, nullable=False, default='')
     price_toman = db.Column(db.Integer, nullable=False)
+    category = db.Column(db.Text, nullable=False, default='')
+    size = db.Column(db.Text, nullable=False, default='')
+    color = db.Column(db.Text, nullable=False, default='')
     stock = db.Column(db.Integer, nullable=False, default=0)
     is_active = db.Column(db.Boolean(create_constraint=True, name='valid_active'), nullable=False, default=True)
     __table_args__ = (
@@ -83,3 +86,19 @@ class OrderItem(db.Model):
     @property
     def line_total_toman(self):
         return self.unit_price_toman * self.quantity
+
+
+class User(db.Model):
+    __tablename__ = 'user'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(254), nullable=False, unique=True)
+    password_hash = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.Text, nullable=False, default=utc_now)
+
+    def set_password(self, password):
+        from werkzeug.security import generate_password_hash
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.password_hash, password)
