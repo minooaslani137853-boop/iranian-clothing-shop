@@ -10,6 +10,7 @@ erDiagram
         text password_hash
         text created_at
     }
+    USER o|--o{ CUSTOMER_ORDER : places
     PRODUCT ||--o{ CART_ITEM : contains
     CART ||--o{ CART_ITEM : has
     CART ||--o{ CUSTOMER_ORDER : submits
@@ -41,6 +42,9 @@ erDiagram
         text cart_id FK
         text checkout_key UK
         text tracking_code UK
+        integer user_id FK
+        text payment_provider
+        text payment_reference
         text recipient_name
         text phone
         text address
@@ -67,3 +71,5 @@ erDiagram
 - اطلاعات گیرنده در سفارش است؛ حساب کاربر در مرحله ۳ اضافه شده است ولی هنوز به سبد و سفارش متصل نیست. وضعیت اولیه `placed` فقط ثبت سفارش است، نه پرداخت بانکی.
 
 مرحله ۳: جدول `user` با ایمیل یکتا و هش رمز و ستون‌های دسته، سایز و رنگ محصول با مقدار پیش‌فرض خالی اضافه شدند. دستور `upgrade-db` داده مرحله ۲ را حفظ می‌کند.
+
+مرحله ۴: user_id اختیاری مالک حساب، payment_provider و payment_reference اضافه شدند. وضعیت پرداخت Mock جدید `mock_paid` است؛ سفارش‌های تاریخی `placed` حفظ می‌شوند. اطلاعات کارت در مدل وجود ندارد. سفارش بدون user_id فقط با نشست سبد قابل مشاهده است. مبلغ کل و وجود اقلام در جریان checkout اتمیک کنترل می‌شوند.

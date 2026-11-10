@@ -166,6 +166,8 @@ def test_upgrade_stage_two_database_preserves_data(tmp_path):
         assert p.name == 'legacy' and p.price_toman == 100
         assert p.category == p.size == p.color == ''
         assert 'user' in inspect(db.engine).get_table_names()
+        order_columns = {c['name'] for c in inspect(db.engine).get_columns('customer_order')}
+        assert {'user_id', 'payment_reference', 'payment_provider'} <= order_columns
 
 
 def test_non_ascii_csrf_is_rejected(client):

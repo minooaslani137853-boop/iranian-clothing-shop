@@ -40,16 +40,28 @@ def create_app(config=None):
 
     from app.routes.shop import shop
     app.register_blueprint(shop)
+    from app.routes.orders import orders
+    app.register_blueprint(orders)
+    from app.services.payments import MockGateway
+    app.extensions['payment_gateway'] = app.config.get('PAYMENT_GATEWAY') or MockGateway()
 
     @app.cli.command('upgrade-db')
     def upgrade_db():
-        """Add stage 3 columns to an existing stage 2 SQLite database."""
+        """Upgrade stage 2/3 SQLite schemas without deleting existing data."""
         db.create_all()
         columns = {column['name'] for column in inspect(db.engine).get_columns('product')}
         with db.engine.begin() as connection:
             for column in ('category', 'size', 'color'):
                 if column not in columns:
                     connection.execute(text(f"ALTER TABLE product ADD COLUMN {column} TEXT NOT NULL DEFAULT ''"))
+        order_columns = {column['name'] for column in inspect(db.engine).get_columns('customer_order')}
+        additions = {'user_id': 'INTEGER REFERENCES user(id) ON DELETE RESTRICT',
+                     'payment_provider': "TEXT NOT NULL DEFAULT 'mock'",
+                     'payment_reference': 'TEXT'}
+        with db.engine.begin() as connection:
+            for column, definition in additions.items():
+                if column not in order_columns:
+                    connection.execute(text(f'ALTER TABLE customer_order ADD COLUMN {column} {definition}'))
         click.echo('Database upgraded.')
 
     return app
