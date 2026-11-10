@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block content %}<h1>{{ 'ثبت‌نام' if registering else 'ورود' }}</h1>{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+<form method="post"><input type="hidden" name="csrf_token" value="{{ session.csrf_token }}"><label for="email">ایمیل</label><input id="email" name="email" type="email" maxlength="254" required autocomplete="email" value="{{ request.form.get('email', '') }}"><label for="password">رمز عبور</label><input id="password" name="password" type="password" maxlength="128" {% if registering %}minlength="8" autocomplete="new-password"{% else %}autocomplete="current-password"{% endif %} required><button>{{ 'ثبت‌نام' if registering else 'ورود' }}</button></form>{% endblock %}

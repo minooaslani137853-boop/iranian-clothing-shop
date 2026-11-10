@@ -11,7 +11,7 @@ def test_init_db_is_repeatable_and_persistent(tmp_path):
     assert runner.invoke(args=['init-db']).exit_code == 0
     from app.models import Product
     with app.app_context():
-        assert set(inspect(db.engine).get_table_names()) == {'product', 'cart', 'cart_item', 'customer_order', 'order_item'}
+        assert set(inspect(db.engine).get_table_names()) == {'product', 'cart', 'cart_item', 'customer_order', 'order_item', 'user'}
         db.session.add(Product(name='لباس', price_toman=100, stock=1))
         db.session.commit()
     second = create_app(settings)
