@@ -2,7 +2,7 @@
 
 فروشگاه فارسی، راست‌به‌چپ و با قیمت صحیح به **تومان**؛ فناوری هدف Flask و SQLite با آزمون‌های pytest و Selenium.
 
-## وضعیت مرحله ۵
+## وضعیت مرحله ۶
 ثبت‌نام و ورود با هش scrypt، خروج POST با CSRF، لیست و جزئیات محصولات و جستجو و فیلتر ترکیبی دسته، سایز، رنگ و بازه قیمت پیاده‌سازی شده‌اند. صفحات فارسی RTL هستند. سبد خرید، checkout اتمیک، پرداخت Mock، تأیید و تاریخچه سفارش و پنل ادمین نیز آماده‌اند. ظاهر کل سایت مینیمال، فارسی RTL، ریسپانسیو و با فونت محلی وزیرمتن است.
 
 ## پیش‌نیازها و نصب
@@ -114,4 +114,30 @@ flask --app app:create_app set-admin --email admin@example.com --revoke
 ```bash
 python -m pytest --html=docs/test-reports/stage-5.html --self-contained-html --junitxml=docs/test-reports/stage-5.xml
 ```
-گزارش `stage-5-summary.md` و XML نهایی در مخزن ثبت شده‌اند؛ HTML محلی است. آزمون‌های مرورگر این مرحله با Chromium headless و CDP روی دیتابیس آزمایشی مستقل انجام شدند؛ اتصال Selenium هنوز در suite اضافه نشده است.
+گزارش `stage-5-summary.md` و XML نهایی در مخزن ثبت شده‌اند؛ HTML محلی است. بررسی مرورگر مرحله ۵ با CDP انجام شد. در مرحله ۶ آزمون‌های خودکار System و Acceptance با adapterهای Selenium و Playwright به suite اضافه شدند.
+
+## آزمون‌های سیستم و پذیرش مرحله ۶
+
+```bash
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python scripts/run_test_reports.py
+```
+
+این دستور همه آزمون‌های Unit، Integration، System و Acceptance را اجرا می‌کند و `stage-6-summary.md`، `stage-6.html`، `stage-6.xml`، metadata مرورگر و تصاویر نهایی هر تست را در `docs/test-reports/` تولید می‌کند. MD و بخش جمع‌بندی HTML از XML همان اجرا محاسبه می‌شوند؛ کد خروج pytest حفظ می‌شود. گزارش قدیمی همین نام‌ها پیش از اجرا پاک می‌شود تا نتیجه کهنه به عنوان اجرای جدید گزارش نشود.
+
+اجرای جداگانه مرورگر:
+```bash
+python -m pytest tests/system tests/acceptance -v
+```
+
+مرورگر Chrome/Chromium نصب‌شده لازم است. مسیر اختیاری با `CHROME_BINARY` تعیین می‌شود. Selenium ابتدا با headless Chrome و cache قابل نوشتن در مسیر موقت امتحان می‌شود؛ ChromeDriver سازگار باید در PATH یا از طریق Selenium Manager در دسترس باشد. فقط در شکست راه‌اندازی از Playwright headless روی Chromium نصب‌شده استفاده می‌شود. اگر هیچ مرورگری موجود نیست، از نصب رسمی مرورگر سیستم یا `python -m playwright install chromium` استفاده کنید؛ دانلود به دسترسی شبکه نیاز دارد. گزینه `--no-sandbox` برای سازگاری container تست استفاده شده و تنظیم سرور تولید نیست.
+
+هر تست مرورگر یک سرور HTTP واقعی روی پورت آزاد و SQLite فایل موقت دارد؛ نیازی به راه‌اندازی دستی سرور، داده واقعی، حساب ادمین یا اطلاعات بانکی نیست. context و cookie هر تست مستقل‌اند. تست‌های مرورگر هیچ مرحله خرید را با Flask test client دور نمی‌زنند. سرور، دیتابیس و مرورگر در teardown بسته می‌شوند. هیچ test مرورگر در نبود ابزار skip یا به‌صورت ساختگی pass نمی‌شود؛ اگر هر دو backend شکست بخورند خطا ثبت می‌شود. خطای assertion هم باعث تعویض backend نمی‌شود.
+
+- System: ثبت‌نام → جستجو → جزئیات → سبد → پرداخت Mock → تأیید → تاریخچه و خالی‌شدن سبد.
+- US-01: جستجوی محصول فعال، تومان، RTL، نرمال‌سازی فارسی، بدون نتیجه و عبارت خالی.
+- US-02: افزودن، جمع و موجودی، افزودن مجدد، رد موجودی ناکافی، تغییر تعداد و حذف.
+- US-03: رد تلفن نامعتبر بدون تغییر داده و ثبت سفارش موفق با کنترل موجودی و snapshot.
+
+اجرای ثبت‌شده این محیط از Playwright استفاده کرد: Selenium Manager پس از اصلاح cache قابل نوشتن نتوانست metadata درایور را از `googlechromelabs.github.io` بگیرد (خطای اتصال tunnel). جزئیات واقعی در [گزارش مرحله ۶](docs/test-reports/stage-6-summary.md) ثبت شده‌اند. این نتیجه به معنی اجرای موفق Selenium یا اتصال درگاه بانکی نیست.
