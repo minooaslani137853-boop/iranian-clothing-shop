@@ -94,6 +94,7 @@ class OrderItem(db.Model):
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
+    is_admin = db.Column(db.Boolean(create_constraint=True, name='valid_admin'), nullable=False, default=False)
     email = db.Column(db.String(254), nullable=False, unique=True)
     password_hash = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.Text, nullable=False, default=utc_now)

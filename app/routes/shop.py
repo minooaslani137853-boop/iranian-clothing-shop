@@ -132,7 +132,7 @@ def product_detail(product_id):
 
 @shop.app_errorhandler(404)
 def not_found(_error):
-    return render_template('error.html', message='صفحه یا محصول یافت نشد.'), 404
+    return render_template('error.html', code=404, message='صفحه یا محصول یافت نشد.'), 404
 
 
 @shop.app_errorhandler(400)
